@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata:
+  License: Apache-2.0
+Description: "This template creates public and private subnets"
+Resources:
+  PublicSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-west-2b 
+      CidrBlock: 10.0.0.0/17
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+        - Key: SubnetType
+          Value: Public
+      VpcId: !ImportValue PrimaryVpcId 
+  PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: us-west-2b
+      CidrBlock: 10.0.128.0/17
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+        - Key: SubnetType
+          Value: Private
+      VpcId: !ImportValue PrimaryVpcId
+  PublicSubnetRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !ImportValue PrimaryVpcId
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  PrivateSubnetRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId: !ImportValue PrimaryVpcId
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  PublicRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref PublicSubnetRouteTable 
+      SubnetId: !Ref PublicSubnet
+  PrivateRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      RouteTableId: !Ref PrivateSubnetRouteTable 
+      SubnetId: !Ref PrivateSubnet
+Outputs:
+  PublicSubnet:
+    Description: Public Subnet Id
+    Value: !Ref PublicSubnet
+    Export:
+      Name: PublicSubnetId
+  PrivateSubnet:
+    Description: Private Subnet Id
+    Value: !Ref PrivateSubnet
+    Export:
+      Name: PrivateSubnetId
+  PublicSubnetRouteTable:
+    Description: Public Subnet Route Table Id
+    Value: !Ref PublicSubnetRouteTable
+    Export:
+      Name: PublicSubnetRouteTableId
+  PrivateSubnetRouteTable:
+    Description: Private Subnet Route Table Id
+    Value: !Ref PrivateSubnetRouteTable
+    Export:
+      Name: PrivateSubnetRouteTableId

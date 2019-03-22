@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata:
+  License: Apache-2.0
+Description: "This template sets up routing for VPC"
+Resources:
+  VpcIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  VpcIGWAssociation:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      InternetGatewayId: !Ref VpcIGW
+      VpcId: !ImportValue PrimaryVpcId
+  NatEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+    DependsOn: VpcIGW
+  NatGW:
+    Type: AWS::EC2::NatGateway
+    Properties: 
+      AllocationId: !GetAtt NatEIP.AllocationId 
+      SubnetId: !ImportValue PublicSubnetId 
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  IGWRoute:
+    Type: AWS::EC2::Route
+    Properties: 
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref VpcIGW
+      RouteTableId: !ImportValue PublicSubnetRouteTableId
+  NatGWRoute:
+    Type: AWS::EC2::Route
+    Properties: 
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGW
+      RouteTableId: !ImportValue PrivateSubnetRouteTableId 
+Outputs:
+  VpcIGWId:
+    Description: IGW Id
+    Value: !Ref VpcIGW
+    Export:
+      Name: VpcIGWId
+  NatGWId:
+    Description: NatGateway Id
+    Value: !Ref NatGW
+    Export:
+      Name: NatGWId

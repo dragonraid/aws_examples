@@ -1,0 +1,19 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata:
+  License: Apache-2.0
+Description: Master template that includes nested templates
+Resources:
+  SubnetsStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: subnets.yaml
+    DependsOn: VPCStack
+  VPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: vpc.yaml
+  RoutingStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: routing.yaml
+    DependsOn: SubnetsStack
