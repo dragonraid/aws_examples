@@ -5,6 +5,8 @@ This repository contains AWS Examples. Individual directories contains examples 
      - ~vpc.yaml~          ... creates vpc 
      - ~subnets.yaml~      ... creates public and private subnets 
      - ~routing.yaml~      ... sets up routing between subnets
+   - ~bastion.yaml~        ... creates bastion hosts in public subnet. Before creating this stack, make sure to create ssh key-pair
+                               and update ~ImageId~ if needed.
 *** Deployment guide
     Use ~awscli~ to deploy CloudFormation stacks. See install guide [[https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html][here.]]
     #+BEGIN_SRC

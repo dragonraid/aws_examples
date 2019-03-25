@@ -3,17 +3,22 @@ Metadata:
   License: Apache-2.0
 Description: Master template that includes nested templates
 Resources:
+  VPCStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: vpc.yaml
   SubnetsStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: subnets.yaml
     DependsOn: VPCStack
-  VPCStack:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: vpc.yaml
   RoutingStack:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: routing.yaml
     DependsOn: SubnetsStack
+  BastionStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: bastion.yaml
+    DependsOn: RoutingStack
