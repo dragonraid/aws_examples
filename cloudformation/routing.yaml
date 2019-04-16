@@ -45,6 +45,9 @@ Resources:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref VpcIGW
       RouteTableId: !ImportValue PublicSubnetRouteTableId
+    DependsOn:
+      - VpcIGW
+      - VpcIGWAssociation
   NatGWRoute:
     Type: AWS::EC2::Route
     Properties: 
