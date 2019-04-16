@@ -1,0 +1,65 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata:
+  License: Apache-2.0
+Description: This template lauches bastion host in public subnet
+Resources:
+  BastionSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: BastionSecurityGroup
+      GroupDescription: Bastion security group 
+      VpcId: !ImportValue PrimaryVpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          Description: ssh
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          Description: ssh
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 10.0.0.0/16
+        - IpProtocol: tcp
+          Description: http to s3
+          FromPort: 80
+          ToPort: 80
+          DestinationPrefixListId: !ImportValue S3PrefixList
+  controlInterface:
+    Type: AWS::EC2::NetworkInterface
+    Properties: 
+      Description: Control interface for EIP
+      SubnetId: !ImportValue PublicSubnetId
+      GroupSet:
+        - !Ref BastionSecurityGroup
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  Bastion:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-061392db613a6357b
+      AvailabilityZone: us-west-2b
+      InstanceType: t2.micro
+      NetworkInterfaces:
+        - NetworkInterfaceId: !Ref controlInterface
+          DeviceIndex: 0
+      KeyName: alpha
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  BastionEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+  BastionEIPAssociaton:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      AllocationId: !GetAtt BastionEIP.AllocationId
+      NetworkInterfaceId: !Ref controlInterface
+    DependsOn: Bastion # To make sure that NetworkInterface is active before attaching EIP
