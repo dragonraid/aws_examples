@@ -1,12 +1,12 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Metadata:
   License: Apache-2.0
-Description: "This template creates public and private subnets"
+Description: 'This template creates public and private subnets'
 Resources:
   PublicSubnet:
     Type: AWS::EC2::Subnet
     Properties:
-      AvailabilityZone: us-west-2b 
+      AvailabilityZone: us-west-2b
       CidrBlock: 10.0.0.0/17
       MapPublicIpOnLaunch: true
       Tags:
@@ -16,7 +16,7 @@ Resources:
           Value: foo@bar.com
         - Key: SubnetType
           Value: Public
-      VpcId: !ImportValue PrimaryVpcId 
+      VpcId: !ImportValue PrimaryVpcId
   PrivateSubnet:
     Type: AWS::EC2::Subnet
     Properties:
@@ -33,7 +33,7 @@ Resources:
       VpcId: !ImportValue PrimaryVpcId
   PublicSubnetRouteTable:
     Type: AWS::EC2::RouteTable
-    Properties: 
+    Properties:
       VpcId: !ImportValue PrimaryVpcId
       Tags:
         - Key: Project
@@ -42,7 +42,7 @@ Resources:
           Value: foo@bar.com
   PrivateSubnetRouteTable:
     Type: AWS::EC2::RouteTable
-    Properties: 
+    Properties:
       VpcId: !ImportValue PrimaryVpcId
       Tags:
         - Key: Project
@@ -51,13 +51,13 @@ Resources:
           Value: foo@bar.com
   PublicRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties: 
-      RouteTableId: !Ref PublicSubnetRouteTable 
+    Properties:
+      RouteTableId: !Ref PublicSubnetRouteTable
       SubnetId: !Ref PublicSubnet
   PrivateRouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties: 
-      RouteTableId: !Ref PrivateSubnetRouteTable 
+    Properties:
+      RouteTableId: !Ref PrivateSubnetRouteTable
       SubnetId: !Ref PrivateSubnet
 Outputs:
   PublicSubnet:

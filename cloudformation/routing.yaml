@@ -2,12 +2,12 @@ AWSTemplateFormatVersion: '2010-09-09'
 Metadata:
   License: Apache-2.0
 Description: This template sets up routing for VPC
-Mappings: 
-  RegionMapPrefixList: 
-    us-west-1: 
+Mappings:
+  RegionMapPrefixList:
+    us-west-1:
       S3: pl-6ba54002
       DynamoDB: pl-6ea54007
-    us-west-2: 
+    us-west-2:
       S3: pl-68a54001
       DynamoDb: pl-00a54069
 Resources:
@@ -21,7 +21,7 @@ Resources:
           Value: foo@bar.com
   VpcIGWAssociation:
     Type: AWS::EC2::VPCGatewayAttachment
-    Properties: 
+    Properties:
       InternetGatewayId: !Ref VpcIGW
       VpcId: !ImportValue PrimaryVpcId
   NatEIP:
@@ -31,9 +31,9 @@ Resources:
     DependsOn: VpcIGW
   NatGW:
     Type: AWS::EC2::NatGateway
-    Properties: 
-      AllocationId: !GetAtt NatEIP.AllocationId 
-      SubnetId: !ImportValue PublicSubnetId 
+    Properties:
+      AllocationId: !GetAtt NatEIP.AllocationId
+      SubnetId: !ImportValue PublicSubnetId
       Tags:
         - Key: Project
           Value: Alpha
@@ -41,7 +41,7 @@ Resources:
           Value: foo@bar.com
   IGWRoute:
     Type: AWS::EC2::Route
-    Properties: 
+    Properties:
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref VpcIGW
       RouteTableId: !ImportValue PublicSubnetRouteTableId
@@ -50,17 +50,17 @@ Resources:
       - VpcIGWAssociation
   NatGWRoute:
     Type: AWS::EC2::Route
-    Properties: 
+    Properties:
       DestinationCidrBlock: 0.0.0.0/0
       NatGatewayId: !Ref NatGW
-      RouteTableId: !ImportValue PrivateSubnetRouteTableId 
+      RouteTableId: !ImportValue PrivateSubnetRouteTableId
   S3Endpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
       RouteTableIds:
         - !ImportValue PublicSubnetRouteTableId
-        - !ImportValue PrivateSubnetRouteTableId 
-      ServiceName: !Join 
+        - !ImportValue PrivateSubnetRouteTableId
+      ServiceName: !Join
         - ''
         - - com.amazonaws.
           - !Ref 'AWS::Region'
@@ -79,11 +79,11 @@ Outputs:
       Name: NatGWId
   S3PrefixList:
     Description: S3 Prefix list
-    Value: !FindInMap [RegionMapPrefixList, !Ref "AWS::Region", S3]
+    Value: !FindInMap [RegionMapPrefixList, !Ref 'AWS::Region', S3]
     Export:
       Name: S3PrefixList
   DynamoDbPrefixList:
     Description: DynamoDb Prefix list
-    Value: !FindInMap [RegionMapPrefixList, !Ref "AWS::Region", DynamoDb]
+    Value: !FindInMap [RegionMapPrefixList, !Ref 'AWS::Region', DynamoDb]
     Export:
       Name: DynamoDbPrefixList

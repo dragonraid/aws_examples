@@ -1,11 +1,11 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Metadata:
   License: Apache-2.0
-Description: "This template creates VPC"
+Description: This template creates VPC
 Resources:
   PrimaryVPC:
     Type: AWS::EC2::VPC
-    Properties: 
+    Properties:
       CidrBlock: 10.0.0.0/16
       EnableDnsSupport: true
       EnableDnsHostnames: false
@@ -23,4 +23,3 @@ Outputs:
     Value: !Ref PrimaryVPC
     Export:
       Name: PrimaryVpcId
-

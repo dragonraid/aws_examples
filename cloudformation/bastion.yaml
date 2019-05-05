@@ -7,7 +7,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: BastionSecurityGroup
-      GroupDescription: Bastion security group 
+      GroupDescription: Bastion security group
       VpcId: !ImportValue PrimaryVpcId
       SecurityGroupIngress:
         - IpProtocol: tcp
@@ -28,7 +28,7 @@ Resources:
           DestinationPrefixListId: !ImportValue S3PrefixList
   controlInterface:
     Type: AWS::EC2::NetworkInterface
-    Properties: 
+    Properties:
       Description: Control interface for EIP
       SubnetId: !ImportValue PublicSubnetId
       GroupSet:
@@ -47,7 +47,7 @@ Resources:
       NetworkInterfaces:
         - NetworkInterfaceId: !Ref controlInterface
           DeviceIndex: 0
-      KeyName: alpha
+      KeyName: alpha_bastion
       Tags:
         - Key: Project
           Value: Alpha
