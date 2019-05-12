@@ -26,6 +26,11 @@ Resources:
           FromPort: 80
           ToPort: 80
           DestinationPrefixListId: !ImportValue S3PrefixList
+        - IpProtocol: tcp
+          Description: http to VPC CidrIp 
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 10.0.0.0/16 
   controlInterface:
     Type: AWS::EC2::NetworkInterface
     Properties:
@@ -63,3 +68,9 @@ Resources:
       AllocationId: !GetAtt BastionEIP.AllocationId
       NetworkInterfaceId: !Ref controlInterface
     DependsOn: Bastion # To make sure that NetworkInterface is active before attaching EIP
+Outputs:
+  BastionSecurityGroupId:
+    Description: Bastion Security Group ID
+    Value: !Ref BastionSecurityGroup 
+    Export:
+      Name: BastionSecurityGroupId
