@@ -1,3 +1,4 @@
+SHELL:=/bin/bash
 AWS_REGION:=us-west-2
 AWS_PROFILE:=aws_alpha
 S3_BUCKET:=alpha-cf-bucket
@@ -13,10 +14,19 @@ define create_ssh_key
 	fi
 endef
 
+define describe 
+	@echo 'Bastions public DNS'
+	@aws ec2 describe-instances --filter "Name=tag:Service,Values=bastion" --query 'Reservations[*].Instances[*].PublicDnsName' --profile $(AWS_PROFILE) --region $(AWS_REGION) --output text
+endef
+
+describe:
+	$(call describe)
+
 infra:
 	$(call create_ssh_key,$(BASTION_KEY))
 	aws cloudformation package --template-file cloudformation/infrastructure.yaml --s3-bucket $(S3_BUCKET) --output-template-file pkg_infrastructure.yaml --profile $(AWS_PROFILE) --region $(AWS_REGION)
 	aws cloudformation deploy --template-file pkg_infrastructure.yaml --stack-name infrastructure --profile $(AWS_PROFILE) --region $(AWS_REGION)
+	$(call describe)
 
 clean_infra:
 	aws cloudformation delete-stack --stack-name infrastructure --profile $(AWS_PROFILE) --region $(AWS_REGION)

@@ -51,7 +51,7 @@ Resources:
       InstanceType: t2.micro
       NetworkInterfaces:
         - NetworkInterfaceId: !Ref controlInterface
-          DeviceIndex: 0
+          DeviceIndex: '0'
       KeyName: alpha_bastion
       Tags:
         - Key: Project

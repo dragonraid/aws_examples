@@ -12,8 +12,8 @@ Resources:
     Properties:
       TemplateURL: vpcRouting.yaml
     DependsOn: VpcSubnets
-  # BastionStack:
-  #   Type: AWS::CloudFormation::Stack
-  #   Properties:
-  #     TemplateURL: bastion.yaml
-  #   DependsOn: RoutingStack
+  Bastion:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: BastionV2.yaml
+    DependsOn: VpcRouting
