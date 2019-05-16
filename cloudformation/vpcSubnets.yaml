@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata:
+  License: Apache-2.0
+Description: This template creates Vpc
+Resources:
+  PrimaryVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+        - Key: VpcDesignation
+          Value: Primary
+  PublicSubnetAZA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select # us-west-2a
+        - 0
+        - !GetAZs
+      CidrBlock: 10.0.0.0/18
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+        - Key: SubnetType
+          Value: Public
+      VpcId: !Ref PrimaryVpc
+  PublicSubnetAZB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select # us-west-2a
+        - 1
+        - !GetAZs
+      CidrBlock: 10.0.64.0/18
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+        - Key: SubnetType
+          Value: Public
+      VpcId: !Ref PrimaryVpc
+  PrivateSubnetAZA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AvailabilityZone: us-west-2b
+      AvailabilityZone: !Select # us-west-2a
+        - 0
+        - !GetAZs
+      CidrBlock: 10.0.128.0/18
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+        - Key: SubnetType
+          Value: Private
+      VpcId: !Ref PrimaryVpc
+  PrivateSubnetAZB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      # AvailabilityZone: us-west-2b
+      AvailabilityZone: !Select # us-west-2a
+        - 1
+        - !GetAZs
+      CidrBlock: 10.0.192.0/18
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+        - Key: SubnetType
+          Value: Private
+      VpcId: !Ref PrimaryVpc
+Outputs:
+  PrimaryVpcId:
+    Description: Primary Vpc Id
+    Value: !Ref PrimaryVpc
+    Export:
+      Name: PrimaryVpcId
+  PublicSubnetAZA:
+    Description: Public Subnet Id
+    Value: !Ref PublicSubnetAZA
+    Export:
+      Name: PublicSubnetAZAId
+  PublicSubnetAZB:
+    Description: Public Subnet Id
+    Value: !Ref PublicSubnetAZB
+    Export:
+      Name: PublicSubnetAZBId
+  PrivateSubnetAZA:
+    Description: Private Subnet Id
+    Value: !Ref PrivateSubnetAZA
+    Export:
+      Name: PrivateSubnetAZAId
+  PrivateSubnetAZB:
+    Description: Private Subnet Id
+    Value: !Ref PrivateSubnetAZB
+    Export:
+      Name: PrivateSubnetAZBId

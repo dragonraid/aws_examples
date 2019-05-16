@@ -6,7 +6,7 @@ WEBAPP_KEY:=alpha_webapp
 
 define create_ssh_key
 	@if test -f $1.pem; then \
-        echo "Key $1.pem already exists."; \
+		echo "Key $1.pem already exists."; \
 	else \
 		aws ec2 create-key-pair --key-name $1 --query 'KeyMaterial' --output text --profile $(AWS_PROFILE) --region $(AWS_REGION) > $1.pem; \
 		chmod 400 $1.pem; \

@@ -1,0 +1,180 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Metadata:
+  License: Apache-2.0
+Description: This template sets up routing for VPC
+Mappings:
+  RegionMapPrefixList:
+    us-west-1:
+      S3: pl-6ba54002
+      DynamoDB: pl-6ea54007
+    us-west-2:
+      S3: pl-68a54001
+      DynamoDb: pl-00a54069
+Resources:
+  PublicSubnetRouteTableAZA:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !ImportValue PrimaryVpcId
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  PublicSubnetRouteTableAZB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !ImportValue PrimaryVpcId
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  PrivateSubnetRouteTableAZA:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !ImportValue PrimaryVpcId
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  PrivateSubnetRouteTableAZB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !ImportValue PrimaryVpcId
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  PublicRouteTableAssociationAZA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicSubnetRouteTableAZA
+      SubnetId: !ImportValue PublicSubnetAZAId
+  PublicRouteTableAssociationAZB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicSubnetRouteTableAZB
+      SubnetId: !ImportValue PublicSubnetAZBId
+  PrivateRouteTableAssociationAZA:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateSubnetRouteTableAZA
+      SubnetId: !ImportValue PrivateSubnetAZAId
+  PrivateRouteTableAssociationAZB:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateSubnetRouteTableAZB
+      SubnetId: !ImportValue PrivateSubnetAZBId
+  VpcIGW:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  VpcIGWAssociation:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref VpcIGW
+      VpcId: !ImportValue PrimaryVpcId
+  NatEIPAZA:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+    DependsOn: VpcIGW
+  NatGWAZA:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatEIPAZA.AllocationId
+      SubnetId: !ImportValue PublicSubnetAZAId
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  NatEIPAZB:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+    DependsOn: VpcIGW
+  NatGWAZB:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatEIPAZB.AllocationId
+      SubnetId: !ImportValue PublicSubnetAZBId
+      Tags:
+        - Key: Project
+          Value: Alpha
+        - Key: Owner
+          Value: foo@bar.com
+  IGWRouteAZA:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref VpcIGW
+      RouteTableId: !Ref PublicSubnetRouteTableAZA
+    DependsOn:
+      - VpcIGWAssociation
+  IGWRouteAZB:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref VpcIGW
+      RouteTableId: !Ref PublicSubnetRouteTableAZB
+    DependsOn:
+      - VpcIGWAssociation
+  NatGWRouteAZA:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGWAZA
+      RouteTableId: !Ref PrivateSubnetRouteTableAZA
+  NatGWRouteAZB:
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGWAZB
+      RouteTableId: !Ref PrivateSubnetRouteTableAZB
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      RouteTableIds:
+        - !Ref PublicSubnetRouteTableAZA 
+        - !Ref PublicSubnetRouteTableAZB
+        - !Ref PrivateSubnetRouteTableAZA 
+        - !Ref PrivateSubnetRouteTableAZB
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .s3
+      VpcId: !ImportValue PrimaryVpcId
+Outputs:
+  VpcIGWId:
+    Description: IGW Id
+    Value: !Ref VpcIGW
+    Export:
+      Name: VpcIGWId
+  NatGWAZAId:
+    Description: NatGateway Id
+    Value: !Ref NatGWAZA
+    Export:
+      Name: NatGWAZAId
+  NatGWAZBId:
+    Description: NatGateway Id
+    Value: !Ref NatGWAZB
+    Export:
+      Name: NatGWAZBId
+  S3PrefixList:
+    Description: S3 Prefix list
+    Value: !FindInMap [RegionMapPrefixList, !Ref 'AWS::Region', S3]
+    Export:
+      Name: S3PrefixList
+  DynamoDbPrefixList:
+    Description: DynamoDb Prefix list
+    Value: !FindInMap [RegionMapPrefixList, !Ref 'AWS::Region', DynamoDb]
+    Export:
+      Name: DynamoDbPrefixList
