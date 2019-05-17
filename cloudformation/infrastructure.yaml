@@ -11,9 +11,18 @@ Resources:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: vpcRouting.yaml
-    DependsOn: VpcSubnets
+      Parameters: 
+        PrimaryVpcId: !GetAtt VpcSubnets.Outputs.PrimaryVpcId
+        PublicSubnetAZAId: !GetAtt VpcSubnets.Outputs.PublicSubnetAZAId
+        PublicSubnetAZBId: !GetAtt VpcSubnets.Outputs.PublicSubnetAZBId
+        PrivateSubnetAZAId: !GetAtt VpcSubnets.Outputs.PrivateSubnetAZAId
+        PrivateSubnetAZBId: !GetAtt VpcSubnets.Outputs.PrivateSubnetAZBId
   Bastion:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: BastionV2.yaml
+      Parameters:
+        PrimaryVpcId: !GetAtt VpcSubnets.Outputs.PrimaryVpcId
+        PublicSubnetAZAId: !GetAtt VpcSubnets.Outputs.PublicSubnetAZAId
+        PublicSubnetAZBId: !GetAtt VpcSubnets.Outputs.PublicSubnetAZBId
     DependsOn: VpcRouting

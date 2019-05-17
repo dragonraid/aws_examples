@@ -89,22 +89,22 @@ Outputs:
     Value: !Ref PrimaryVpc
     Export:
       Name: PrimaryVpcId
-  PublicSubnetAZA:
+  PublicSubnetAZAId:
     Description: Public Subnet Id
     Value: !Ref PublicSubnetAZA
     Export:
       Name: PublicSubnetAZAId
-  PublicSubnetAZB:
+  PublicSubnetAZBId:
     Description: Public Subnet Id
     Value: !Ref PublicSubnetAZB
     Export:
       Name: PublicSubnetAZBId
-  PrivateSubnetAZA:
+  PrivateSubnetAZAId:
     Description: Private Subnet Id
     Value: !Ref PrivateSubnetAZA
     Export:
       Name: PrivateSubnetAZAId
-  PrivateSubnetAZB:
+  PrivateSubnetAZBId:
     Description: Private Subnet Id
     Value: !Ref PrivateSubnetAZB
     Export:

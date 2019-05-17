@@ -2,6 +2,22 @@ AWSTemplateFormatVersion: '2010-09-09'
 Metadata:
   License: Apache-2.0
 Description: This template sets up routing for VPC
+Parameters:
+  PrimaryVpcId:
+    Description: Primary VPC Id 
+    Type: AWS::EC2::VPC::Id
+  PublicSubnetAZAId:
+    Description: Public subnet in AZ A
+    Type: String
+  PublicSubnetAZBId:
+    Description: Public subnet in AZ B
+    Type: String
+  PrivateSubnetAZAId:
+    Description: Private subnet in AZ A
+    Type: String
+  PrivateSubnetAZBId:
+    Description: Private subnet in AZ B
+    Type: String
 Mappings:
   RegionMapPrefixList:
     us-west-1:
@@ -14,7 +30,7 @@ Resources:
   PublicSubnetRouteTableAZA:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !ImportValue PrimaryVpcId
+      VpcId: !Ref PrimaryVpcId
       Tags:
         - Key: Project
           Value: Alpha
@@ -23,7 +39,7 @@ Resources:
   PublicSubnetRouteTableAZB:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !ImportValue PrimaryVpcId
+      VpcId: !Ref PrimaryVpcId
       Tags:
         - Key: Project
           Value: Alpha
@@ -32,7 +48,7 @@ Resources:
   PrivateSubnetRouteTableAZA:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !ImportValue PrimaryVpcId
+      VpcId: !Ref PrimaryVpcId
       Tags:
         - Key: Project
           Value: Alpha
@@ -41,7 +57,7 @@ Resources:
   PrivateSubnetRouteTableAZB:
     Type: AWS::EC2::RouteTable
     Properties:
-      VpcId: !ImportValue PrimaryVpcId
+      VpcId: !Ref PrimaryVpcId
       Tags:
         - Key: Project
           Value: Alpha
@@ -51,22 +67,22 @@ Resources:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PublicSubnetRouteTableAZA
-      SubnetId: !ImportValue PublicSubnetAZAId
+      SubnetId: !Ref PublicSubnetAZAId
   PublicRouteTableAssociationAZB:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PublicSubnetRouteTableAZB
-      SubnetId: !ImportValue PublicSubnetAZBId
+      SubnetId: !Ref PublicSubnetAZBId
   PrivateRouteTableAssociationAZA:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PrivateSubnetRouteTableAZA
-      SubnetId: !ImportValue PrivateSubnetAZAId
+      SubnetId: !Ref PrivateSubnetAZAId
   PrivateRouteTableAssociationAZB:
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
       RouteTableId: !Ref PrivateSubnetRouteTableAZB
-      SubnetId: !ImportValue PrivateSubnetAZBId
+      SubnetId: !Ref PrivateSubnetAZBId
   VpcIGW:
     Type: AWS::EC2::InternetGateway
     Properties:
@@ -79,7 +95,7 @@ Resources:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       InternetGatewayId: !Ref VpcIGW
-      VpcId: !ImportValue PrimaryVpcId
+      VpcId: !Ref PrimaryVpcId
   NatEIPAZA:
     Type: AWS::EC2::EIP
     Properties:
@@ -89,7 +105,7 @@ Resources:
     Type: AWS::EC2::NatGateway
     Properties:
       AllocationId: !GetAtt NatEIPAZA.AllocationId
-      SubnetId: !ImportValue PublicSubnetAZAId
+      SubnetId: !Ref PublicSubnetAZAId
       Tags:
         - Key: Project
           Value: Alpha
@@ -104,7 +120,7 @@ Resources:
     Type: AWS::EC2::NatGateway
     Properties:
       AllocationId: !GetAtt NatEIPAZB.AllocationId
-      SubnetId: !ImportValue PublicSubnetAZBId
+      SubnetId: !Ref PublicSubnetAZBId
       Tags:
         - Key: Project
           Value: Alpha
@@ -151,7 +167,7 @@ Resources:
         - - com.amazonaws.
           - !Ref 'AWS::Region'
           - .s3
-      VpcId: !ImportValue PrimaryVpcId
+      VpcId: !Ref PrimaryVpcId
 Outputs:
   VpcIGWId:
     Description: IGW Id

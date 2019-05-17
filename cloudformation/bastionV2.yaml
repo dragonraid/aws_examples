@@ -1,19 +1,28 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Metadata:
   License: Apache-2.0
-Description: This template lauches bastion host in public subnet
+Description: This template launches bastion host in public subnet
 Parameters:
   ImageId:
     Description: AMI ID used for Bastion
-    Type: String
+    Type: AWS::EC2::Image::Id
     Default: ami-061392db613a6357b
+  PrimaryVpcId:
+    Description: Primary VPC Id 
+    Type: AWS::EC2::VPC::Id
+  PublicSubnetAZAId:
+    Description: Public subnet Id
+    Type: String
+  PublicSubnetAZBId:
+    Description: Public subnet Id
+    Type: String
 Resources:
   BastionSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: BastionSecurityGroup
       GroupDescription: Bastion security group
-      VpcId: !ImportValue PrimaryVpcId
+      VpcId: !Ref PrimaryVpcId
       SecurityGroupIngress:
       - IpProtocol: tcp
         Description: ssh
@@ -53,8 +62,8 @@ Resources:
         PauseTime: PT10S
     Properties:
       VPCZoneIdentifier:
-      - !ImportValue PublicSubnetAZAId 
-      - !ImportValue PublicSubnetAZBId 
+      - !Ref PublicSubnetAZAId 
+      - !Ref PublicSubnetAZBId 
       LaunchConfigurationName: !Ref LaunchConfig
       MinSize: '2'
       MaxSize: '4'

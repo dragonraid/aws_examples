@@ -5,6 +5,9 @@ S3_BUCKET:=alpha-cf-bucket
 BASTION_KEY:=alpha_bastion
 WEBAPP_KEY:=alpha_webapp
 
+bastion_filter:=Name=tag:Service,Values=bastion
+dns_query:=Reservations[*].Instances[*].PublicDnsName
+
 define create_ssh_key
 	@if test -f $1.pem; then \
 		echo "Key $1.pem already exists."; \
@@ -14,19 +17,19 @@ define create_ssh_key
 	fi
 endef
 
-define describe 
+define describe_ec2 
 	@echo 'Bastions public DNS'
-	@aws ec2 describe-instances --filter "Name=tag:Service,Values=bastion" --query 'Reservations[*].Instances[*].PublicDnsName' --profile $(AWS_PROFILE) --region $(AWS_REGION) --output text
+	@aws ec2 describe-instances --filter "$1" --query "$2" --profile $(AWS_PROFILE) --region $(AWS_REGION) --output text
 endef
 
 describe:
-	$(call describe)
+	$(call describe_ec2,$(bastion_filter),$(dns_query))
 
 infra:
 	$(call create_ssh_key,$(BASTION_KEY))
 	aws cloudformation package --template-file cloudformation/infrastructure.yaml --s3-bucket $(S3_BUCKET) --output-template-file pkg_infrastructure.yaml --profile $(AWS_PROFILE) --region $(AWS_REGION)
 	aws cloudformation deploy --template-file pkg_infrastructure.yaml --stack-name infrastructure --profile $(AWS_PROFILE) --region $(AWS_REGION)
-	$(call describe)
+	$(call describe_ec2,$(bastion_filter),$(dns_query))
 
 clean_infra:
 	aws cloudformation delete-stack --stack-name infrastructure --profile $(AWS_PROFILE) --region $(AWS_REGION)
