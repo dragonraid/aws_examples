@@ -5,43 +5,32 @@ S3_BUCKET:=alpha-cf-bucket
 BASTION_KEY:=alpha_bastion
 WEBAPP_KEY:=alpha_webapp
 
-bastion_filter:=Name=tag:Service,Values=bastion
-dns_query:=Reservations[*].Instances[*].PublicDnsName
+EXEC:=.venv/bin/python3 scripts/cloudformation.py -p $(AWS_PROFILE) -r $(AWS_REGION)
 
-define create_ssh_key
-	@if test -f $1.pem; then \
-		echo "Key $1.pem already exists."; \
-	else \
-		aws ec2 create-key-pair --key-name $1 --query 'KeyMaterial' --output text --profile $(AWS_PROFILE) --region $(AWS_REGION) > $1.pem; \
-		chmod 400 $1.pem; \
-	fi
-endef
+venv: venv/bin/activate
+venv/bin/activate: requirements.txt
+	@echo 'Updating python virtualenv...'
+	@test -d .venv || virtualenv -p python3 .venv
+	@.venv/bin/pip install -qUr requirements.txt
+	@touch .venv/bin/activate
 
-define describe_ec2 
-	@echo 'Bastions public DNS'
-	@aws ec2 describe-instances --filter "$1" --query "$2" --profile $(AWS_PROFILE) --region $(AWS_REGION) --output text
-endef
+infra: venv
+	@$(EXEC) package -t cloudformation/infrastructure.yaml -b $(S3_BUCKET)
+	@$(EXEC) create-key-pair -k $(BASTION_KEY)
+	@$(EXEC) launch-stack -s infra -t pkg_infrastructure.yaml -P cloudformation/infrastructureParameters.json
+	@$(EXEC) get-bastions-endpoints -k $(BASTION_KEY)
 
-describe:
-	$(call describe_ec2,$(bastion_filter),$(dns_query))
+clean_infra: venv
+	@$(EXEC) delete-stack -s infra
+	@$(EXEC) delete-key-pair -k $(BASTION_KEY)
 
-infra:
-	$(call create_ssh_key,$(BASTION_KEY))
-	aws cloudformation package --template-file cloudformation/infrastructure.yaml --s3-bucket $(S3_BUCKET) --output-template-file pkg_infrastructure.yaml --profile $(AWS_PROFILE) --region $(AWS_REGION)
-	aws cloudformation deploy --template-file pkg_infrastructure.yaml --stack-name infrastructure --profile $(AWS_PROFILE) --region $(AWS_REGION)
-	$(call describe_ec2,$(bastion_filter),$(dns_query))
+webapp: venv
+	@$(EXEC) create-key-pair -k $(WEBAPP_KEY)
+	@$(EXEC) launch-stack -s webapp -t cloudformation/webapp.yaml -P cloudformation/webappParameters.json
 
-clean_infra:
-	aws cloudformation delete-stack --stack-name infrastructure --profile $(AWS_PROFILE) --region $(AWS_REGION)
-	aws ec2 delete-key-pair --key-name $(BASTION_KEY) --profile $(AWS_PROFILE) --region $(AWS_REGION)
-	chmod 700 $(BASTION_KEY).pem && rm -f $(BASTION_KEY).pem
+clean_webapp: venv
+	@$(EXEC) delete-stack -s webapp
+	@$(EXEC) delete-key-pair -k $(WEBAPP_KEY)
 
-webapp:
-	$(call create_ssh_key,$(WEBAPP_KEY))
-	aws cloudformation package --template-file cloudformation/webapp.yaml --s3-bucket $(S3_BUCKET) --output-template-file pkg_webapp.yaml --profile $(AWS_PROFILE) --region $(AWS_REGION)
-	aws cloudformation deploy --template-file pkg_webapp.yaml --stack-name webapp --profile $(AWS_PROFILE) --region $(AWS_REGION)
-
-clean_webapp:
-	aws cloudformation delete-stack --stack-name webapp --profile $(AWS_PROFILE) --region $(AWS_REGION)
-	aws ec2 delete-key-pair --key-name $(WEBAPP_KEY) --profile $(AWS_PROFILE) --region $(AWS_REGION)
-	chmod 700 $(WEBAPP_KEY).pem && rm -f $(WEBAPP_KEY).pem
+debug:
+	@$(EXEC) get-bastions-endpoints -k $(BASTION_KEY)

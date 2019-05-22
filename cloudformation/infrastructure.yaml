@@ -2,6 +2,14 @@ AWSTemplateFormatVersion: '2010-09-09'
 Metadata:
   License: Apache-2.0
 Description: Master template that includes nested templates
+Parameters:
+  ImageId:
+    Description: AMI ID used for Bastion
+    Type: AWS::EC2::Image::Id
+    Default: ami-061392db613a6357b
+  BastionKeyName:
+    Description: bastion key name 
+    Type: String
 Resources:
   VpcSubnets:
     Type: AWS::CloudFormation::Stack
@@ -22,6 +30,8 @@ Resources:
     Properties:
       TemplateURL: BastionV2.yaml
       Parameters:
+        ImageId: !Ref ImageId
+        KeyName: !Ref BastionKeyName
         PrimaryVpcId: !GetAtt VpcSubnets.Outputs.PrimaryVpcId
         PublicSubnetAZAId: !GetAtt VpcSubnets.Outputs.PublicSubnetAZAId
         PublicSubnetAZBId: !GetAtt VpcSubnets.Outputs.PublicSubnetAZBId

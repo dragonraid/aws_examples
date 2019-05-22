@@ -1,0 +1,6 @@
+boto3
+click
+pyyaml
+flake8
+yapf
+colorama

@@ -6,7 +6,9 @@ Parameters:
   ImageId:
     Description: AMI ID used for Bastion
     Type: AWS::EC2::Image::Id
-    Default: ami-061392db613a6357b
+  KeyName:
+    Description: bastion key name 
+    Type: String
   PrimaryVpcId:
     Description: Primary VPC Id 
     Type: AWS::EC2::VPC::Id
@@ -52,8 +54,8 @@ Resources:
       InstanceType: t2.micro
       SecurityGroups:
       - !Ref BastionSecurityGroup
-      KeyName: alpha_bastion
-  WebAppAutoscalingGroup:
+      KeyName: !Ref KeyName 
+  BastionAutoscalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     UpdatePolicy:
       AutoScalingRollingUpdate:

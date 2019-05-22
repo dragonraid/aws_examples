@@ -1,36 +1,42 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Metadata:
   License: Apache-2.0
-Description: This template launches dummy webapplication
+Description: This template launches dummy web application
 Parameters:
   ImageId:
-    Description: AMI ID used in webapp
-    Type: String
+    Description: AMI ID used in web application
+    Type: AWS::EC2::Image::Id
     Default: ami-061392db613a6357b
+  KeyName:
+    Description: web application key name 
+    Type: String
 Resources:
   WebAppSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: WebAppSecurityGroup
       GroupDescription: Web application security group
-      VpcId: !ImportValue PrimaryVpcId
+      VpcId: 
+        Fn::ImportValue: PrimaryVpcId
       SecurityGroupIngress:
-        - IpProtocol: tcp
-          Description: ssh
-          FromPort: 22
-          ToPort: 22
-          SourceSecurityGroupId: !ImportValue BastionSecurityGroupId
-        - IpProtocol: tcp
-          Description: http from vpc CidrIp 
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 10.0.0.0/16
+      - IpProtocol: tcp
+        Description: ssh
+        FromPort: 22
+        ToPort: 22
+        SourceSecurityGroupId: 
+          Fn::ImportValue: BastionSecurityGroupId
+      - IpProtocol: tcp
+        Description: http from vpc CidrIp 
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 10.0.0.0/16
       SecurityGroupEgress:
-        - IpProtocol: tcp
-          Description: http to s3
-          FromPort: 80
-          ToPort: 80
-          DestinationPrefixListId: !ImportValue S3PrefixList
+      - IpProtocol: tcp
+        Description: http to s3
+        FromPort: 80
+        ToPort: 80
+        DestinationPrefixListId:
+          Fn::ImportValue: S3PrefixList
   WebAppAutoscalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     UpdatePolicy:
@@ -39,41 +45,46 @@ Resources:
         MinInstancesInService: 1
         PauseTime: PT10S
     Properties:
-      AvailabilityZones:
-        - us-west-2b
       VPCZoneIdentifier:
-        - !ImportValue PrivateSubnetId 
-      LaunchConfigurationName: !Ref LaunchConfig
-      MinSize: 2
-      MaxSize: 4
+      - Fn::ImportValue: PrivateSubnetAZAId 
+      - Fn::ImportValue: PrivateSubnetAZBId 
+      LaunchConfigurationName:
+        Ref: LaunchConfig
+      MinSize: '2'
+      MaxSize: '4'
       LoadBalancerNames:
-        - !Ref ElasticLoadBalancer
+      - Ref: ElasticLoadBalancer
   ElasticLoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
       Scheme: internal
+      SecurityGroups:
+      - Ref: WebAppSecurityGroup
       Subnets:
-      - !ImportValue PrivateSubnetId
+      - Fn::ImportValue: PrivateSubnetAZAId 
+      - Fn::ImportValue: PrivateSubnetAZBId
       Listeners:
-      - LoadBalancerPort: 80
-        InstancePort: 80
+      - LoadBalancerPort: '80'
+        InstancePort: '80'
         Protocol: HTTP
       HealthCheck:
         Target: HTTP:80/
-        HealthyThreshold: 3
-        UnhealthyThreshold: 5
-        Interval: 30 
-        Timeout: 5
+        HealthyThreshold: '3'
+        UnhealthyThreshold: '5'
+        Interval: '30' 
+        Timeout: '5'
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
-      ImageId: ami-061392db613a6357b
+      ImageId:
+        Ref: ImageId 
       InstanceType: t2.micro
       SecurityGroups:
-        - !Ref WebAppSecurityGroup
-      KeyName: alpha_webapp
+      - Ref: WebAppSecurityGroup
+      KeyName: 
+        Ref: KeyName
       UserData:
-        !Base64 |
+        Fn::Base64: |
           #!/usr/bin/env bash
           yum update -y
           yum install httpd -y
