@@ -32,5 +32,5 @@ clean_webapp: venv
 	@$(EXEC) delete-stack -s webapp
 	@$(EXEC) delete-key-pair -k $(WEBAPP_KEY)
 
-debug:
+describe:
 	@$(EXEC) get-bastions-endpoints -k $(BASTION_KEY)

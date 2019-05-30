@@ -6,5 +6,9 @@
     {
         "ParameterKey": "BastionKeyName",
         "ParameterValue": "alpha_bastion"
+    },
+    {
+        "ParameterKey": "PolicyTargetValue",
+        "ParameterValue": "10"
     }
 ]

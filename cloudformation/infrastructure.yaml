@@ -10,6 +10,9 @@ Parameters:
   BastionKeyName:
     Description: bastion key name 
     Type: String
+  PolicyTargetValue:
+    Description: Scaling policy target value
+    Type: String
 Resources:
   VpcSubnets:
     Type: AWS::CloudFormation::Stack
@@ -30,6 +33,7 @@ Resources:
     Properties:
       TemplateURL: BastionV2.yaml
       Parameters:
+        PolicyTargetValue: !Ref PolicyTargetValue
         ImageId: !Ref ImageId
         KeyName: !Ref BastionKeyName
         PrimaryVpcId: !GetAtt VpcSubnets.Outputs.PrimaryVpcId

@@ -88,11 +88,14 @@ def launch_stack(ctx, stack_name, template_body, parameters):
         waiter = cfn.get_waiter('stack_create_complete')
     print(Fore.GREEN +
           'Launching stack, Stack Id: {}'.format(response['StackId']))
-    waiter.wait(StackName=response['StackId'],
-                WaiterConfig={
-                    'Delay': 10,
-                    'MaxAttempts': 123
-                })
+    try:
+        waiter.wait(StackName=response['StackId'],
+                    WaiterConfig={
+                        'Delay': 10,
+                        'MaxAttempts': 123
+                    })
+    except botocore.exceptions.WaiterError as e:
+        print(Fore.RED + str(e))
 
 
 @cli.command(name='delete-stack')
@@ -133,7 +136,6 @@ def package(ctx, template_body, output_template, bucket_name):
     print(Fore.GREEN + process.communicate()[0])
 
 
-# TODO describe func
 @cli.command(name='get-bastions-endpoints')
 @click.pass_context
 @click.option('--key-name', '-k', type=str, required=True)
@@ -153,7 +155,7 @@ def get_bastions_endpoints(ctx, key_name):
     print(Fore.GREEN +
           'You can now access bastions with command(s) printed below')
     for endpoint in endpoints:
-        print('ssh -i {} ec2-user@{}'.format(key_name, endpoint))
+        print('ssh -i {}.pem ec2-user@{}'.format(key_name, endpoint))
 
 
 def describe_instances(ctx, filters):

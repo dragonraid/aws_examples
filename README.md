@@ -8,10 +8,10 @@ This repository contains AWS Examples. Individual directories contains examples 
   - `bastionV2.yaml`    ... creates bastion hosts in public subnet
 - `webapp.yaml` ... creates dummy web application.
 ## Deployment guide
-Use `awscli` to deploy CloudFormation stacks. See install guide [here](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html).
 ### Prerequisites
 - create IAM User and attach Administrator policy (for simplicity, not recommended in production environment). Create access key and secret access key and put into `./aws/credentials` file
-- edit `Makefile` variables in order to reflect your environment:
+- edit `Makefile` variables in order to reflect your environment
+- install `python3` and `virtualenv`
 ### Makefile
 Makefile simplifies deployment of Cloudformation templates. Available commands:
 - `make infra`  ... creates basic AWS infrastructure (deploys `cloudformation/infrastructure.yaml`)

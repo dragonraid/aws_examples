@@ -18,6 +18,9 @@ Parameters:
   PublicSubnetAZBId:
     Description: Public subnet Id
     Type: String
+  PolicyTargetValue:
+    Description: Scaling policy target value
+    Type: String
 Resources:
   BastionSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -69,10 +72,20 @@ Resources:
       LaunchConfigurationName: !Ref LaunchConfig
       MinSize: '2'
       MaxSize: '4'
+      DesiredCapacity: '2'
       Tags:
       - Key: Service 
         Value: bastion 
         PropagateAtLaunch: true
+  ScalePolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref BastionAutoscalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: !Ref PolicyTargetValue
 Outputs:
   BastionSecurityGroupId:
     Description: Bastion Security Group ID
