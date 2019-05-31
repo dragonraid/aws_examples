@@ -62,21 +62,26 @@ def delete_key_pair(ctx, key_name):
 @cli.command(name='launch-stack')
 @click.option('--stack-name', '-s', type=str, required=True)
 @click.option('--template-body', '-t', type=str, required=True)
-@click.option('--parameters', '-P', type=str, required=True)
+@click.option('--parameter-file', '-P', type=str)
 @click.pass_context
-def launch_stack(ctx, stack_name, template_body, parameters):
+def launch_stack(ctx, stack_name, template_body, parameter_file):
     cfn = ctx.obj['session'].client('cloudformation')
     try:
         stack_description = cfn.describe_stacks(StackName=stack_name)
         stack_state = stack_description['Stacks'][0]['StackStatus']
     except botocore.exceptions.ClientError:
         stack_state = "NON_EXISTENT"
+
+    if parameter_file:
+        parameters = _get_parameters(parameter_file)
+    else:
+        parameters = {}
     if stack_state == 'CREATE_COMPLETE' or stack_state == 'UPDATE_COMPLETE':
         try:
             response = cfn.update_stack(
                 StackName=stack_name,
                 TemplateBody=_get_template(template_body),
-                Parameters=_get_parameters(parameters))
+                Parameters=parameters)
         except botocore.exceptions.ClientError as e:
             print(Fore.YELLOW + str(e))
             sys.exit(0)
@@ -84,7 +89,7 @@ def launch_stack(ctx, stack_name, template_body, parameters):
     else:
         response = cfn.create_stack(StackName=stack_name,
                                     TemplateBody=_get_template(template_body),
-                                    Parameters=_get_parameters(parameters))
+                                    Parameters=parameters)
         waiter = cfn.get_waiter('stack_create_complete')
     print(Fore.GREEN +
           'Launching stack, Stack Id: {}'.format(response['StackId']))
