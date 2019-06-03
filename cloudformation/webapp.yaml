@@ -10,6 +10,9 @@ Parameters:
   KeyName:
     Description: web application key name 
     Type: String
+  PolicyTargetValue:
+    Description: Scaling policy target value
+    Type: String
 Resources:
   WebAppSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -37,6 +40,15 @@ Resources:
         ToPort: 80
         DestinationPrefixListId:
           Fn::ImportValue: S3PrefixList
+  ScalePolicy:
+    Type: AWS::AutoScaling::ScalingPolicy
+    Properties:
+      AutoScalingGroupName: !Ref WebAppAutoscalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: !Ref PolicyTargetValue
   WebAppAutoscalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     UpdatePolicy:
