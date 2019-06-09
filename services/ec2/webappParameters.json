@@ -6,5 +6,9 @@
     {
         "ParameterKey": "KeyName",
         "ParameterValue": "alpha_webapp"
+    },
+    {
+        "ParameterKey": "PolicyTargetValue",
+        "ParameterValue": "70"
     }
 ]

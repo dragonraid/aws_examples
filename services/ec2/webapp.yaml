@@ -43,12 +43,14 @@ Resources:
   ScalePolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
-      AutoScalingGroupName: !Ref WebAppAutoscalingGroup
+      AutoScalingGroupName: 
+        Ref: WebAppAutoscalingGroup
       PolicyType: TargetTrackingScaling
       TargetTrackingConfiguration:
         PredefinedMetricSpecification:
           PredefinedMetricType: ASGAverageCPUUtilization
-        TargetValue: !Ref PolicyTargetValue
+        TargetValue: 
+          Ref: PolicyTargetValue
   WebAppAutoscalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
     UpdatePolicy:

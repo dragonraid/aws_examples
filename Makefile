@@ -15,9 +15,9 @@ venv/bin/activate: requirements.txt
 	@touch .venv/bin/activate
 
 infra: venv
-	@$(EXEC) package -t cloudformation/infrastructure.yaml -b $(S3_BUCKET)
+	@$(EXEC) package -t services/vpc/infrastructure.yaml -b $(S3_BUCKET)
 	@$(EXEC) create-key-pair -k $(BASTION_KEY)
-	@$(EXEC) launch-stack -s infra -t pkg_infrastructure.yaml -P cloudformation/infrastructureParameters.json
+	@$(EXEC) launch-stack -s infra -t pkg_infrastructure.yaml -P services/vpc/infrastructureParameters.json
 	@$(EXEC) get-bastions-endpoints -k $(BASTION_KEY)
 
 clean_infra: venv
@@ -26,7 +26,7 @@ clean_infra: venv
 
 webapp: venv
 	@$(EXEC) create-key-pair -k $(WEBAPP_KEY)
-	@$(EXEC) launch-stack -s webapp -t cloudformation/webapp.yaml -P cloudformation/webappParameters.json
+	@$(EXEC) launch-stack -s webapp -t services/ec2/webapp.yaml -P services/ec2/webappParameters.json
 
 clean_webapp: venv
 	@$(EXEC) delete-stack -s webapp
