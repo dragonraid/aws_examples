@@ -20,7 +20,7 @@ Resources:
           Description: ssh
           FromPort: 22
           ToPort: 22
-          CidrIp: 10.0.0.0/16
+          CidrIp: !ImportValue IpSpace
         - IpProtocol: tcp
           Description: http to s3
           FromPort: 80
@@ -30,7 +30,7 @@ Resources:
           Description: http to VPC CidrIp 
           FromPort: 80
           ToPort: 80
-          CidrIp: 10.0.0.0/16 
+          CidrIp: !ImportValue IpSpace
   controlInterface:
     Type: AWS::EC2::NetworkInterface
     Properties:

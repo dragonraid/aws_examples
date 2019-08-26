@@ -14,8 +14,13 @@ This repository contains AWS Examples. Individual directories contains examples 
 - install `python3` and `virtualenv`
 ### Makefile
 Makefile simplifies deployment of Cloudformation templates. Available commands:
-- `make infra`  ... creates basic AWS infrastructure (deploys `cloudformation/infrastructure.yaml`)
-- `make webapp` ... create webapp stack (deploys `cloudformation/webapp.yaml`)
-> All Makefile targets listed above have `clean_` counterpart (i.e. `clean_infra`) that deletes stack and its related resources.
+- `make infra`  ... creates basic AWS infrastructure (deploys `cloudformation/infrastructure.yaml`)  in `alpha` account
+- `make clean_infra` ... deletes basic AWS infrastructure in `alpha` accoint
+- `make webapp` ... create webapp stack (deploys `cloudformation/webapp.yaml`)  in `alpha` account
+- `make clean_webapp` ... deletes webapp stack in `alpha` account
+- `make describe` ... describes bastions endpoint in `alpha` account
+- `make beta_infra`  ... creates basic AWS infrastructure (deploys `cloudformation/infrastructure.yaml`) in `beta` account
+- `make beta_clean_infra` ... deletes basic AWS infrastructure in `beta` accoint
+- `make beta_describe` ... describes bastions endpoint in `beta` account
 
-Additionally `Makefile` provides `describe` target (usage `make describe`), that is describing relevant resources
+> NOTE: For deploying `webapp` stack, certificate must be created and uploaded either to ACM or IAM and referenced in SSM parameter store with `webappCertificate` key

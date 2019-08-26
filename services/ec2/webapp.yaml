@@ -13,6 +13,10 @@ Parameters:
   PolicyTargetValue:
     Description: Scaling policy target value
     Type: String
+  WebappCertificate:
+    Description: Certificate for Load Balancer
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: webappCertificate
 Resources:
   WebAppSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -32,7 +36,8 @@ Resources:
         Description: http from vpc CidrIp 
         FromPort: 80
         ToPort: 80
-        CidrIp: 10.0.0.0/16
+        CidrIp: 
+          Fn::ImportValue: IpSpace
       SecurityGroupEgress:
       - IpProtocol: tcp
         Description: http to s3
@@ -40,6 +45,19 @@ Resources:
         ToPort: 80
         DestinationPrefixListId:
           Fn::ImportValue: S3PrefixList
+  ElbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: ElbSecurityGroup
+      GroupDescription: ELB security group
+      VpcId: 
+        Fn::ImportValue: PrimaryVpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        Description: https world 
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 0.0.0.0/0
   ScalePolicy:
     Type: AWS::AutoScaling::ScalingPolicy
     Properties:
@@ -58,6 +76,7 @@ Resources:
         MaxBatchSize: 1
         MinInstancesInService: 1
         PauseTime: PT10S
+    # TODO: Creation policy
     Properties:
       VPCZoneIdentifier:
       - Fn::ImportValue: PrivateSubnetAZAId 
@@ -71,20 +90,23 @@ Resources:
   ElasticLoadBalancer:
     Type: AWS::ElasticLoadBalancing::LoadBalancer
     Properties:
-      Scheme: internal
+      Scheme: internet-facing
       SecurityGroups:
-      - Ref: WebAppSecurityGroup
+      - Ref: ElbSecurityGroup 
       Subnets:
-      - Fn::ImportValue: PrivateSubnetAZAId 
-      - Fn::ImportValue: PrivateSubnetAZBId
+      - Fn::ImportValue: PublicSubnetAZAId 
+      - Fn::ImportValue: PublicSubnetAZBId
       Listeners:
-      - LoadBalancerPort: '80'
+      - LoadBalancerPort: '443'
         InstancePort: '80'
-        Protocol: HTTP
+        Protocol: HTTPS
+        InstanceProtocol: HTTP
+        SSLCertificateId:
+          Ref: WebappCertificate
       HealthCheck:
         Target: HTTP:80/
-        HealthyThreshold: '3'
-        UnhealthyThreshold: '5'
+        HealthyThreshold: '2'
+        UnhealthyThreshold: '2'
         Interval: '30' 
         Timeout: '5'
   LaunchConfig:

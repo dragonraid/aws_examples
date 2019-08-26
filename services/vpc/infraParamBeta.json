@@ -1,0 +1,30 @@
+[
+    {
+        "ParameterKey": "ImageId",
+        "ParameterValue": "ami-061392db613a6357b"
+    },
+    {
+        "ParameterKey": "BastionKeyName",
+        "ParameterValue": "beta_bastion"
+    },
+    {
+        "ParameterKey": "PolicyTargetValue",
+        "ParameterValue": "50"
+    },
+    {
+        "ParameterKey": "IpSpace",
+        "ParameterValue": "10.0.0.0/16"
+    },
+    {
+        "ParameterKey": "VpcCidrBlock",
+        "ParameterValue": "10.0.128.0/17"
+    },
+    {
+        "ParameterKey": "PublicSubnetsCidrBlocks",
+        "ParameterValue": "10.0.128.0/19,10.0.160.0/19"
+    },
+    {
+        "ParameterKey": "PrivateSubnetsCidrBlocks",
+        "ParameterValue": "10.0.192.0/19,10.0.224.0/19"
+    }
+]
