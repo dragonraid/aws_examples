@@ -33,7 +33,7 @@ clean_infra: venv
 
 webapp: venv
 	@$(ALPHA_EXEC) create-key-pair -k $(ALPHA_WEBAPP_KEY)
-	@$(ALPHA_EXEC) launch-stack -s webapp -t services/ec2/webapp.yaml -P services/ec2/webappParameters.json
+	@$(ALPHA_EXEC) launch-stack -r -s webapp -t services/ec2/webapp.yaml -P services/ec2/webappParameters.json -c "CAPABILITY_NAMED_IAM"
 
 clean_webapp: venv
 	@$(ALPHA_EXEC) delete-stack -s webapp

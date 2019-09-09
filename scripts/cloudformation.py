@@ -63,8 +63,17 @@ def delete_key_pair(ctx, key_name):
 @click.option('--stack-name', '-s', type=str, required=True)
 @click.option('--template-body', '-t', type=str, required=True)
 @click.option('--parameter-file', '-P', type=str)
+@click.option('--capabilities', '-c', type=str)
+@click.option('--no-rollback', '-r', is_flag=True)
 @click.pass_context
-def launch_stack(ctx, stack_name, template_body, parameter_file):
+def launch_stack(
+        ctx,
+        stack_name,
+        template_body,
+        parameter_file,
+        no_rollback,
+        capabilities,
+):
     cfn = ctx.obj['session'].client('cloudformation')
     try:
         stack_description = cfn.describe_stacks(StackName=stack_name)
@@ -76,20 +85,30 @@ def launch_stack(ctx, stack_name, template_body, parameter_file):
         parameters = _get_parameters(parameter_file)
     else:
         parameters = {}
+    if capabilities:
+        capabilities = capabilities.split(",")
+    else:
+        capabilities = []
     if stack_state == 'CREATE_COMPLETE' or stack_state == 'UPDATE_COMPLETE':
         try:
             response = cfn.update_stack(
                 StackName=stack_name,
                 TemplateBody=_get_template(template_body),
-                Parameters=parameters)
+                Parameters=parameters,
+                Capabilities=capabilities,
+            )
         except botocore.exceptions.ClientError as e:
             print(Fore.YELLOW + str(e))
             sys.exit(0)
         waiter = cfn.get_waiter('stack_update_complete')
     else:
-        response = cfn.create_stack(StackName=stack_name,
-                                    TemplateBody=_get_template(template_body),
-                                    Parameters=parameters)
+        response = cfn.create_stack(
+            StackName=stack_name,
+            TemplateBody=_get_template(template_body),
+            Parameters=parameters,
+            DisableRollback=no_rollback,
+            Capabilities=capabilities,
+        )
         waiter = cfn.get_waiter('stack_create_complete')
     print(Fore.GREEN +
           'Launching stack, Stack Id: {}'.format(response['StackId']))

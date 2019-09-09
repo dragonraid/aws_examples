@@ -168,6 +168,82 @@ Resources:
           - !Ref 'AWS::Region'
           - .s3
       VpcId: !Ref PrimaryVpcId
+  VpcEndpointSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: VpcEndpointSecurityGroup
+      GroupDescription: Vpc endpoint SG 
+      VpcId: 
+        Fn::ImportValue: PrimaryVpcId
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        Description: https to IpSpace
+        FromPort: 443
+        ToPort: 443
+        CidrIp: 
+          Fn::ImportValue: IpSpace
+  CloudformationEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref VpcEndpointSecurityGroup
+      SubnetIds:
+        - !Ref PrivateSubnetAZAId
+        - !Ref PrivateSubnetAZBId
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .cloudformation
+      VpcEndpointType: Interface
+      VpcId: !Ref PrimaryVpcId
+  CloudWatchEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref VpcEndpointSecurityGroup
+      SubnetIds:
+        - !Ref PrivateSubnetAZAId
+        - !Ref PrivateSubnetAZBId
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .monitoring
+      VpcEndpointType: Interface
+      VpcId: !Ref PrimaryVpcId
+  CloudWatchLogsEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SecurityGroupIds:
+        - !Ref VpcEndpointSecurityGroup
+      SubnetIds:
+        - !Ref PrivateSubnetAZAId
+        - !Ref PrivateSubnetAZBId
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .logs
+      VpcEndpointType: Interface
+      VpcId: !Ref PrimaryVpcId
+  CloudWatchEventsEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - !Ref PrivateSubnetAZAId
+        - !Ref PrivateSubnetAZBId
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .events
+      VpcEndpointType: Interface
+      VpcId: !Ref PrimaryVpcId
 Outputs:
   VpcIGWId:
     Description: IGW Id
