@@ -1,4 +1,6 @@
 SHELL:=/bin/bash
+CERTGEN:=scripts/certs.sh
+
 ALPHA_AWS_REGION:=us-west-2
 ALPHA_AWS_PROFILE:=aws_alpha
 ALPHA_S3_BUCKET:=alpha-cfn-bucket
@@ -32,12 +34,14 @@ clean_infra: venv
 	@$(ALPHA_EXEC) delete-key-pair -k $(ALPHA_BASTION_KEY)
 
 webapp: venv
+	@$(CERTGEN) $(ALPHA_AWS_REGION) $(ALPHA_AWS_PROFILE) create 
 	@$(ALPHA_EXEC) create-key-pair -k $(ALPHA_WEBAPP_KEY)
 	@$(ALPHA_EXEC) launch-stack -r -s webapp -t services/ec2/webapp.yaml -P services/ec2/webappParameters.json -c "CAPABILITY_NAMED_IAM"
 
 clean_webapp: venv
 	@$(ALPHA_EXEC) delete-stack -s webapp
 	@$(ALPHA_EXEC) delete-key-pair -k $(ALPHA_WEBAPP_KEY)
+	@$(CERTGEN) $(ALPHA_AWS_REGION) $(ALPHA_AWS_PROFILE) delete
 
 describe:
 	@$(ALPHA_EXEC) get-bastions-endpoints -k $(ALPHA_BASTION_KEY)
@@ -51,14 +55,6 @@ beta_infra: venv
 beta_clean_infra: venv
 	@$(BETA_EXEC) delete-stack -s infra
 	@$(BETA_EXEC) delete-key-pair -k $(BETA_BASTION_KEY)
-
-beta_webapp: venv
-	@$(BETA_EXEC) create-key-pair -k $(BETA_WEBAPP_KEY)
-	@$(BETA_EXEC) launch-stack -s webapp -t services/ec2/webapp.yaml -P services/ec2/webappParameters.json
-
-beta_clean_webapp: venv
-	@$(BETA_EXEC) delete-stack -s webapp
-	@$(BETA_EXEC) delete-key-pair -k $(BETA_WEBAPP_KEY)
 
 beta_describe:
 	@$(BETA_EXEC) get-bastions-endpoints -k $(BETA_BASTION_KEY)
