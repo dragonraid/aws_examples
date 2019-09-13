@@ -4,12 +4,13 @@ Metadata:
 Description: Master template that includes nested templates
 Parameters:
   ImageId:
-    Description: AMI ID used for Bastion
-    Type: AWS::EC2::Image::Id
-    Default: ami-061392db613a6357b
+    Description: AMI ID used in web application
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
   BastionKeyName:
     Description: bastion key name 
     Type: String
+    Default: _NOT_SET_
   PolicyTargetValue:
     Description: Scaling policy target value
     Type: String
@@ -29,6 +30,12 @@ Parameters:
   PrivateSubnetsCidrBlocks:
     Description: Private Subnet Cidr Block list
     Type: String
+Conditions:
+  CreateBastion:
+    Fn::Not:
+       - Fn::Equals:
+         - !Ref BastionKeyName
+         - "_NOT_SET_"
 Resources:
   VpcSubnets:
     Type: AWS::CloudFormation::Stack
@@ -51,6 +58,7 @@ Resources:
         PrivateSubnetAZBId: !GetAtt VpcSubnets.Outputs.PrivateSubnetAZBId
   Bastion:
     Type: AWS::CloudFormation::Stack
+    Condition: CreateBastion
     Properties:
       TemplateURL: BastionV2.yaml
       Parameters:

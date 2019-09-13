@@ -25,22 +25,20 @@ venv/bin/activate: requirements.txt
 
 infra: venv
 	@$(ALPHA_EXEC) package -t services/vpc/infrastructure.yaml -b $(ALPHA_S3_BUCKET)
-	@$(ALPHA_EXEC) create-key-pair -k $(ALPHA_BASTION_KEY)
+	# @$(ALPHA_EXEC) create-key-pair -k $(ALPHA_BASTION_KEY) # uncomment when you want to spin-up bastions
 	@$(ALPHA_EXEC) launch-stack -s infra -t pkg_infrastructure.yaml -P services/vpc/infraParamAlpha.json
-	@$(ALPHA_EXEC) get-bastions-endpoints -k $(ALPHA_BASTION_KEY)
+	# @$(ALPHA_EXEC) get-bastions-endpoints -k $(ALPHA_BASTION_KEY) # uncomment when you want to spin-up bastions
 
 clean_infra: venv
 	@$(ALPHA_EXEC) delete-stack -s infra
-	@$(ALPHA_EXEC) delete-key-pair -k $(ALPHA_BASTION_KEY)
+	# @$(ALPHA_EXEC) delete-key-pair -k $(ALPHA_BASTION_KEY) # uncomment when you want to spin-up bastions
 
 webapp: venv
 	@$(CERTGEN) $(ALPHA_AWS_REGION) $(ALPHA_AWS_PROFILE) create 
-	@$(ALPHA_EXEC) create-key-pair -k $(ALPHA_WEBAPP_KEY)
 	@$(ALPHA_EXEC) launch-stack -r -s webapp -t services/ec2/webapp.yaml -P services/ec2/webappParameters.json -c "CAPABILITY_NAMED_IAM"
 
 clean_webapp: venv
 	@$(ALPHA_EXEC) delete-stack -s webapp
-	@$(ALPHA_EXEC) delete-key-pair -k $(ALPHA_WEBAPP_KEY)
 	@$(CERTGEN) $(ALPHA_AWS_REGION) $(ALPHA_AWS_PROFILE) delete
 
 describe:
@@ -48,13 +46,13 @@ describe:
 
 beta_infra: venv
 	@$(BETA_EXEC) package -t services/vpc/infrastructure.yaml -b $(BETA_S3_BUCKET)
-	@$(BETA_EXEC) create-key-pair -k $(BETA_BASTION_KEY)
+	# @$(BETA_EXEC) create-key-pair -k $(BETA_BASTION_KEY) # uncomment when you want to spin-up bastions
 	@$(BETA_EXEC) launch-stack -s infra -t pkg_infrastructure.yaml -P services/vpc/infraParamBeta.json
-	@$(BETA_EXEC) get-bastions-endpoints -k $(BETA_BASTION_KEY)
+	# @$(BETA_EXEC) get-bastions-endpoints -k $(BETA_BASTION_KEY) # uncomment when you want to spin-up bastions
 
 beta_clean_infra: venv
 	@$(BETA_EXEC) delete-stack -s infra
-	@$(BETA_EXEC) delete-key-pair -k $(BETA_BASTION_KEY)
+	# @$(BETA_EXEC) delete-key-pair -k $(BETA_BASTION_KEY) # uncomment when you want to spin-up bastions
 
 beta_describe:
 	@$(BETA_EXEC) get-bastions-endpoints -k $(BETA_BASTION_KEY)

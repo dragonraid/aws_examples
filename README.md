@@ -22,5 +22,3 @@ Makefile simplifies deployment of Cloudformation templates. Available commands:
 - `make beta_infra`  ... creates basic AWS infrastructure (deploys `cloudformation/infrastructure.yaml`) in `beta` account
 - `make beta_clean_infra` ... deletes basic AWS infrastructure in `beta` accoint
 - `make beta_describe` ... describes bastions endpoint in `beta` account
-
-> NOTE: For deploying `webapp` stack, certificate must be created and uploaded either to ACM or IAM and referenced in SSM parameter store with `webappCertificate` key

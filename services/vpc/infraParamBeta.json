@@ -1,13 +1,5 @@
 [
     {
-        "ParameterKey": "ImageId",
-        "ParameterValue": "ami-061392db613a6357b"
-    },
-    {
-        "ParameterKey": "BastionKeyName",
-        "ParameterValue": "beta_bastion"
-    },
-    {
         "ParameterKey": "PolicyTargetValue",
         "ParameterValue": "50"
     },

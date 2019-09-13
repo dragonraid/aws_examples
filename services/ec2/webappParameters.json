@@ -1,13 +1,5 @@
 [
     {
-        "ParameterKey": "ImageId",
-        "ParameterValue": "ami-061392db613a6357b"
-    },
-    {
-        "ParameterKey": "KeyName",
-        "ParameterValue": "alpha_webapp"
-    },
-    {
         "ParameterKey": "PolicyTargetValue",
         "ParameterValue": "70"
     }
