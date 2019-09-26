@@ -265,8 +265,3 @@ Outputs:
     Value: !FindInMap [RegionMapPrefixList, !Ref 'AWS::Region', S3]
     Export:
       Name: S3PrefixList
-  DynamoDbPrefixList:
-    Description: DynamoDb Prefix list
-    Value: !FindInMap [RegionMapPrefixList, !Ref 'AWS::Region', DynamoDb]
-    Export:
-      Name: DynamoDbPrefixList

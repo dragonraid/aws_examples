@@ -211,10 +211,10 @@ Resources:
                 [Install]
                 WantedBy=multi-user.target
           commands:
-            01enable_cfn_hup:
+            01_enable_cfn_hup:
               command: |
                 systemctl enable cfn-hup.service
-            02start_cfn_hup:
+            02_start_cfn_hup:
               command: |
                 systemctl start cfn-hup.service
         02_set_amazon_cloudwatch_agent:

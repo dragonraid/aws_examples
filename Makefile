@@ -13,46 +13,19 @@ BETA_S3_BUCKET:=beta-cfn-bucket
 BETA_BASTION_KEY:=beta_bastion
 BETA_WEBAPP_KEY:=beta_webapp
 
-ALPHA_EXEC:=.venv/bin/python3 scripts/cloudformation.py -p $(ALPHA_AWS_PROFILE) -r $(ALPHA_AWS_REGION)
-BETA_EXEC:=.venv/bin/python3 scripts/cloudformation.py -p $(BETA_AWS_PROFILE) -r $(BETA_AWS_REGION)
+ALPHA_EXEC:=scripts/cloudformation.sh -P $(ALPHA_AWS_PROFILE) -R $(ALPHA_AWS_REGION) -B $(ALPHA_S3_BUCKET)
+BETA_EXEC:=scripts/cloudformation.sh -P $(BETA_AWS_PROFILE) -R $(BETA_AWS_REGION) -B $(BETA_S3_BUCKET)
 
-venv: venv/bin/activate
-venv/bin/activate: requirements.txt
-	@echo 'Updating python virtualenv...'
-	@test -d .venv || virtualenv -p python3 .venv
-	@.venv/bin/pip install -qUr requirements.txt
-	@touch .venv/bin/activate
+infra:
+	@$(ALPHA_EXEC) launch -p -n infrastructure -t services/vpc/infrastructure.yaml -r services/vpc/infraParamAlpha.json
 
-infra: venv
-	@$(ALPHA_EXEC) package -t services/vpc/infrastructure.yaml -b $(ALPHA_S3_BUCKET)
-	# @$(ALPHA_EXEC) create-key-pair -k $(ALPHA_BASTION_KEY) # uncomment when you want to spin-up bastions
-	@$(ALPHA_EXEC) launch-stack -s infra -t pkg_infrastructure.yaml -P services/vpc/infraParamAlpha.json
-	# @$(ALPHA_EXEC) get-bastions-endpoints -k $(ALPHA_BASTION_KEY) # uncomment when you want to spin-up bastions
+clean_infra: 
+	@$(ALPHA_EXEC) delete -n infrastructure
 
-clean_infra: venv
-	@$(ALPHA_EXEC) delete-stack -s infra
-	# @$(ALPHA_EXEC) delete-key-pair -k $(ALPHA_BASTION_KEY) # uncomment when you want to spin-up bastions
-
-webapp: venv
+webapp:
 	@$(CERTGEN) $(ALPHA_AWS_REGION) $(ALPHA_AWS_PROFILE) create 
-	@$(ALPHA_EXEC) launch-stack -r -s webapp -t services/ec2/webapp.yaml -P services/ec2/webappParameters.json -c "CAPABILITY_NAMED_IAM"
+	@$(ALPHA_EXEC) launch -n webapp -t services/ec2/webapp.yaml -r services/ec2/webappParameters.json -c CAPABILITY_NAMED_IAM
 
-clean_webapp: venv
-	@$(ALPHA_EXEC) delete-stack -s webapp
+clean_webapp: 
+	@$(ALPHA_EXEC) delete -n webapp 
 	@$(CERTGEN) $(ALPHA_AWS_REGION) $(ALPHA_AWS_PROFILE) delete
-
-describe:
-	@$(ALPHA_EXEC) get-bastions-endpoints -k $(ALPHA_BASTION_KEY)
-
-beta_infra: venv
-	@$(BETA_EXEC) package -t services/vpc/infrastructure.yaml -b $(BETA_S3_BUCKET)
-	# @$(BETA_EXEC) create-key-pair -k $(BETA_BASTION_KEY) # uncomment when you want to spin-up bastions
-	@$(BETA_EXEC) launch-stack -s infra -t pkg_infrastructure.yaml -P services/vpc/infraParamBeta.json
-	# @$(BETA_EXEC) get-bastions-endpoints -k $(BETA_BASTION_KEY) # uncomment when you want to spin-up bastions
-
-beta_clean_infra: venv
-	@$(BETA_EXEC) delete-stack -s infra
-	# @$(BETA_EXEC) delete-key-pair -k $(BETA_BASTION_KEY) # uncomment when you want to spin-up bastions
-
-beta_describe:
-	@$(BETA_EXEC) get-bastions-endpoints -k $(BETA_BASTION_KEY)
